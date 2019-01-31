@@ -1,3 +1,7 @@
+# Assignment 1
+# Michel Maroun 27197241
+
+
 import urllib
 import urllib.request
 import argparse
@@ -17,39 +21,39 @@ def http_request(args):
 	#default port number
 	port = 80
 	url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0]
-	request = urllib.request.urlopen(url)
-	#if user verbose option -v
-	if args.verbose:
-		verbose(request)
-
 	#map CMD arguments and request
-	httprequest = map_request(args, request)
+	httprequest = map_request(args)
+	connect(server, httprequest, args)
 
+def map_request(args):
+	if args.command == "get":
+		return get(args)
+	if args.command == "post":
+		return post(args)	
+
+#connection to socket and sending request
+def connect(server, httprequest, args):
 	port = 80
 	connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	try:
 		connection.connect((server, port))
 		connection.send(httprequest.encode("utf-8"))
 		response = connection.recv(4096).decode("utf-8")
-		print_terminal(response)
+		#print to terminal
+		print_terminal(response, args)
 		
 	finally:
 		connection.close()
 
-def map_request(args, request):
-	if args.command == "get":
-		return get(args, request)
-	if args.command == "post":
-		return post(args)	
-	
 #get request		
-def get(args, request):
+def get(args):
 	request = "GET "
 	request += args.url.path
 	server = args.url.netloc
 	if args.url.query: 
 		request += "?" + args.url.query
 	request += " HTTP/1.1\r\n" + "Host: " + server + "\r\n" + "User-Agent: Concordia-HTTP/1.0 \r\n"	
+	#If user adds header to command
 	if args.headers: 
 		for i in range(len(args.headers)):
 			request += args.headers[i] + "\r\n"
@@ -58,29 +62,33 @@ def get(args, request):
 		
 #post request		
 def post(args):	
-	data = args.data
+	data = ""
 
-	print(args.url.path)
+	if args.data:
+		data = args.data
+	elif args.file:
+		file = open(args.file, "r")
+		data = file.read()
+		file.close()
+	server = args.url.netloc
+	request = "POST " + args.url.path + " HTTP/1.1\r\n" + "Host :" + server + "\r\n" + "User-Agent : Concordia-HTTP/1.0 \r\n"
 
-	request = "POST "
+	if args.headers:
+		for h in range(len(args.headers)):
+			request += args.headers[h] + "\r\n"
 
+	request +=  "Content-Length:" + str(len(data)) + "\r\n\r\n" + data + "\r\n"
+	print(request)
 	return request
-
-#verbose
-def verbose(request):
-	print( "\nOutput: \n")
-	ok_message = " OK"	
-	if not request.status == 200:
-		ok_message = ""
-
-	print("HTTP/1.1 " + str(request.status) + ok_message)
-	print(request.headers)
 
 def terminal(): 
 	print("write")	
 
-def print_terminal(response):
-	print(response.split("\n\r")[1])
+def print_terminal(response, args):
+	if args.verbose: 
+		print(response.split("\n\r")[0])
+	if args.command == "get":
+		print(response.split("\n\r")[1])
 
 #parser
 parser = argparse.ArgumentParser(description='Http parser', add_help=False)
@@ -101,5 +109,4 @@ parser.add_argument('url', type=str, action="store", help="Url HTTP request is s
 
 	
 args = parser.parse_args()
-
 http_request(args)	
