@@ -1,15 +1,18 @@
 # Assignment 1
 # Michel Maroun 27197241
 
+#Lines to test
+# py httpc get'http://httpbin.org/get?course=networking&assignment=1'
+# py httpc get -v 'http://httpbin.org/get?course=networking&assignment=1'
+# py httpc.py post -h Content-Type:application/json -d {\"Assignment\":1} "http://httpbin.org/post"
+# py httpc.py get "http://httpbin.org/get?course=networking&assignment=1" -o textfile.txt
 
-import urllib
-import urllib.request
 import argparse
 import socket
 from urllib.parse import urlparse
-from urllib import parse
+import urllib.request
 import sys
-	
+
 def http_request(args):
 	#return back scheme, netloc, path, parms,query, fragment
 	args.url = urlparse(args.url)
@@ -49,16 +52,17 @@ def connect(server, httprequest, args):
 def get(args):
 	request = "GET "
 	request += args.url.path
+	server = args.url.netloc
 	if args.url.query: 
 		request += "?" + args.url.query
-	request += " HTTP/1.1\r\n" + "Host: " + args.url.netloc + "\r\n" + "User-Agent: Concordia-HTTP/1.0 \r\n"	
+	request += " HTTP/1.1\r\n" + "Host: " + server + "\r\n" + "User-Agent: Concordia-HTTP/1.0 \r\n"	
 	#If user adds header to command
 	if args.headers: 
 		for i in range(len(args.headers)):
 			request += args.headers[i] + "\r\n"
 	request += "\r\n"
 	return request 	
-		
+
 #post request		
 def post(args):	
 	data = ""
@@ -70,27 +74,40 @@ def post(args):
 		data = file.read()
 		file.close()
 	server = args.url.netloc
-	print(args)
-	request = "POST " + args.url.path + " HTTP/1.1\r\n" + "Host : " + server + "\r\n" + "User-Agent : Concordia-HTTP/1.1 \r\n"
+	request = "POST " + args.url.path + " HTTP/1.0\r\n" + "Host :" + server + "\r\n" + "User-Agent : Concordia-HTTP/1.0 \r\n"
 
 	if args.headers:
-		for h in range(len(args.headers)):
-			request += args.headers[h] + "\r\n"
+		for i in range(len(args.headers)):
+			request += args.headers[i] + "\r\n"
 
 	request +=  "Content-Length:" + str(len(data)) + "\r\n\r\n" + data + "\r\n"
-	print("REQUEST")
-	print(request)
-	print("------")
-	return request
 
-def terminal(): 
-	print("write")	
+	return request
 
 def print_terminal(response, args):
 	if args.verbose: 
 		print(response.split("\n\r")[0])
 	if args.command == "get":
 		print(response.split("\n\r")[1])
+	if args.command == "post":
+		print(response.split("\n\r")[1])
+	output_file(response, args)
+
+#write to file
+def output_file(response, args):
+	file = ""
+	if args.output:
+		try: 
+			file = open(args.output, "w+")
+			#If print with verbose
+			if args.verbose:
+				file.write(response)
+			else:
+				file.write(response.split("\n\r")[1])
+		except: 
+			print("ERROR OPENING FILE")
+		finally: 
+			file.close()
 
 #parser
 parser = argparse.ArgumentParser(description='Http parser', add_help=False)
@@ -108,7 +125,9 @@ parser.add_argument('-f', dest='file', action='store_true')
 parser.add_argument('-h', dest='headers', action='append')
 # Url
 parser.add_argument('url', type=str, action="store", help="Url HTTP request is sent to")
+#Output
+parser.add_argument('-o', dest="output", action="store")
 
-	
 args = parser.parse_args()
+print(args)
 http_request(args)	
