@@ -49,10 +49,9 @@ def connect(server, httprequest, args):
 def get(args):
 	request = "GET "
 	request += args.url.path
-	server = args.url.netloc
 	if args.url.query: 
 		request += "?" + args.url.query
-	request += " HTTP/1.1\r\n" + "Host: " + server + "\r\n" + "User-Agent: Concordia-HTTP/1.0 \r\n"	
+	request += " HTTP/1.1\r\n" + "Host: " + args.url.netloc + "\r\n" + "User-Agent: Concordia-HTTP/1.0 \r\n"	
 	#If user adds header to command
 	if args.headers: 
 		for i in range(len(args.headers)):
@@ -71,14 +70,17 @@ def post(args):
 		data = file.read()
 		file.close()
 	server = args.url.netloc
-	request = "POST " + args.url.path + " HTTP/1.1\r\n" + "Host :" + server + "\r\n" + "User-Agent : Concordia-HTTP/1.0 \r\n"
+	print(args)
+	request = "POST " + args.url.path + " HTTP/1.1\r\n" + "Host : " + server + "\r\n" + "User-Agent : Concordia-HTTP/1.1 \r\n"
 
 	if args.headers:
 		for h in range(len(args.headers)):
 			request += args.headers[h] + "\r\n"
 
 	request +=  "Content-Length:" + str(len(data)) + "\r\n\r\n" + data + "\r\n"
+	print("REQUEST")
 	print(request)
+	print("------")
 	return request
 
 def terminal(): 
