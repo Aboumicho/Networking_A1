@@ -3,50 +3,83 @@ import urllib.request
 import argparse
 import socket
 from urllib.parse import urlparse
+from urllib import parse
 import sys
 	
 def http_request(args):
 	#return back scheme, netloc, path, parms,query, fragment
 	args.url = urlparse(args.url)
 	#test
-	print(args)
+	server = args.url.netloc
 	if not args.url.netloc:
 		server = "localhost"
 						
 	#default port number
 	port = 80
 	url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0]
-	print(url)
 	request = urllib.request.urlopen(url)
-	print(request.read())
-	print(request.status)
+	#if user verbose option -v
+	if args.verbose:
+		verbose(request)
+
 	#map CMD arguments and request
-	map_request(args, request)
+	httprequest = map_request(args, request)
+
+	port = 80
+	connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	try:
+		connection.connect((server, port))
+		connection.send(httprequest.encode("utf-8"))
+		response = connection.recv(4096).decode("utf-8")
+		print(response)
 		
-		
+	finally:
+		connection.close()
+
 def map_request(args, request):
-	if args.get:
-		get(args, request)
-	if args.post:
-		post()
+	if args.command == "get":
+		return get(args, request)
+	if args.command == "post":
+		return post()	
 	
 #get request		
 def get(args, request):
-	print("get")
-	
+	request = "GET "
+	request += args.url.path
+	server = args.url.netloc
+	if args.url.query: 
+		request += "?" + args.url.query
+	request += " HTTP/1.0\r\n" + "Host: " + server + "\r\n" + "User-Agent: Concordia-HTTP/1.0 \r\n"	
+	if args.headers: 
+		for i in range(len(args.headers)):
+			request += args.headers[i] + "\r\n"
+	request += "\r\n"
+	return request 	
 		
 #post request		
 def post():	
 	print("post")
-	
+
+#verbose
+def verbose(request):
+	print( "\nOutput: \n")
+	ok_message = " OK"	
+	if not request.status == 200:
+		ok_message = ""
+
+	print("HTTP/1.1 " + str(request.status) + ok_message)
+	print(request.headers)
+
+def terminal(): 
+	print("write")	
+
 	
 #parser
 parser = argparse.ArgumentParser(description='Http parser', add_help=False)
 	
-#add argument for get		
-parser.add_argument('-g', '--get', action='store_true')
-#add argument for post
-parser.add_argument('-p', '--post', action='store_true')
+# Get/Post
+parser.add_argument('command', choices=['get','post'], help="Executes a HTTP GET/POST request and prints the response.")
+
 #add Data Command 
 parser.add_argument('-d', dest="data", action="store", metavar="inline-data", help="Associates an inline data to the body HTTP POST")
 #add Verbose Command
@@ -60,6 +93,5 @@ parser.add_argument('url', type=str, action="store", help="Url HTTP request is s
 
 	
 args = parser.parse_args()
-	
 	
 http_request(args)	
