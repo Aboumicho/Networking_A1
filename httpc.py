@@ -5,6 +5,7 @@
 # py httpc get'http://httpbin.org/get?course=networking&assignment=1'
 # py httpc get -v 'http://httpbin.org/get?course=networking&assignment=1'
 # py httpc.py post -h Content-Type:application/json -d {\"Assignment\":1} "http://httpbin.org/post"
+# py httpc.py post -h Content-Type:application/json -f "argspost.txt" "http://httpbin.org/post"
 # py httpc.py get "http://httpbin.org/get?course=networking&assignment=1" -o textfile.txt
 
 import argparse
@@ -66,13 +67,14 @@ def get(args):
 #post request		
 def post(args):	
 	data = ""
-
+	tempdata = ""
 	if args.data:
 		data = args.data
 	elif args.file:
 		file = open(args.file, "r")
 		data = file.read()
 		file.close()
+
 	server = args.url.netloc
 	request = "POST " + args.url.path + " HTTP/1.0\r\n" + "Host :" + server + "\r\n" + "User-Agent : Concordia-HTTP/1.0 \r\n"
 
@@ -108,6 +110,8 @@ def output_file(response, args):
 			print("ERROR OPENING FILE")
 		finally: 
 			file.close()
+def redirect():
+	print("Redirect")
 
 #parser
 parser = argparse.ArgumentParser(description='Http parser', add_help=False)
@@ -119,8 +123,8 @@ parser.add_argument('command', choices=['get','post'], help="Executes a HTTP GET
 parser.add_argument('-d', dest="data", action="store", metavar="inline-data", help="Associates an inline data to the body HTTP POST")
 #add Verbose Command
 parser.add_argument('-v','--verbose', action="store_true")
-#add File command
-parser.add_argument('-f', dest='file', action='store_true')
+#add File command 
+parser.add_argument('-f', dest='file', action='store', metavar="inline-data", help="Read arguments from text file.")
 #add Header command
 parser.add_argument('-h', dest='headers', action='append')
 # Url
