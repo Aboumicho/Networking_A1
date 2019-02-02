@@ -16,7 +16,8 @@ import sys
 
 def http_request(args):
 	#return back scheme, netloc, path, parms,query, fragment
-	args.url = urlparse(args.url)
+	if urlparse(args.url):
+		args.url = urlparse(args.url)
 	#test
 	server = args.url.netloc
 	if not args.url.netloc:
@@ -24,10 +25,19 @@ def http_request(args):
 						
 	#default port number
 	port = 80
-	url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0]
-	#map CMD arguments and request
-	httprequest = map_request(args)
-	connect(server, httprequest, args)
+	
+	#If it is a redirect and a get method 
+	if args.command == "get" and isRedirect(args) :
+		print("\n\rRedirecting to:" + args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0] + "?" +args.url.query + "\n\r")
+		#Returns args url .url = Redirect url
+		redirect = getRedirectUrl(args)
+		httprequest = map_request(args)
+		connect(server, httprequest, args)
+	else:
+		url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0]
+		#map CMD arguments and request
+		httprequest = map_request(args)
+		connect(server, httprequest, args)
 
 def map_request(args):
 	if args.command == "get":
@@ -110,9 +120,23 @@ def output_file(response, args):
 			print("ERROR OPENING FILE")
 		finally: 
 			file.close()
-def redirect():
-	print("Redirect")
 
+def isRedirect(args):
+	if args.url:
+		url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0] + "?" +args.url.query
+		request = urllib.request.urlopen(url)
+		if request.geturl() != url:
+			return True 
+		else: 
+			return False
+	else: 
+		return False
+
+def getRedirectUrl(args):
+	url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0] + "?" +args.url.query
+	request = urllib.request.urlopen(url)
+	args.url = urlparse(request.geturl())
+	return args
 #parser
 parser = argparse.ArgumentParser(description='Http parser', add_help=False)
 	
@@ -133,5 +157,5 @@ parser.add_argument('url', type=str, action="store", help="Url HTTP request is s
 parser.add_argument('-o', dest="output", action="store")
 
 args = parser.parse_args()
-print(args)
+
 http_request(args)	
