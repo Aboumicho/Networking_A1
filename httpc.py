@@ -2,8 +2,8 @@
 # Michel Maroun 27197241
 
 #Lines to test
-# py httpc get'http://httpbin.org/get?course=networking&assignment=1'
-# py httpc get -v 'http://httpbin.org/get?course=networking&assignment=1'
+# py httpc.py get'http://httpbin.org/get?course=networking&assignment=1'
+# py httpc.py get -v 'http://httpbin.org/get?course=networking&assignment=1'
 # py httpc.py post -h Content-Type:application/json -d {\"Assignment\":1} "http://httpbin.org/post"
 # py httpc.py post -h Content-Type:application/json -f "argspost.txt" "http://httpbin.org/post"
 # py httpc.py get "http://httpbin.org/get?course=networking&assignment=1" -o textfile.txt
@@ -25,14 +25,19 @@ def http_request(args):
 						
 	#default port number
 	port = 80
-	
+
 	#If it is a redirect and a get method 
 	if args.command == "get" and isRedirect(args) :
-		print("\n\rRedirecting to:" + args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0] + "?" +args.url.query + "\n\r")
+		print("\n\rRedirecting from: " + args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0] + "?" +args.url.query + "\n\r")
 		#Returns args url .url = Redirect url
 		redirect = getRedirectUrl(args)
-		httprequest = map_request(args)
+		httprequest = map_request(redirect)
 		connect(server, httprequest, args)
+	elif args.command == "get": 
+		url =  args.url.netloc + args.url.path.split(" ")[0]
+		#map CMD arguments and request
+		httprequest = map_request(args)
+		connect(server, httprequest, args)	
 	else:
 		url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0]
 		#map CMD arguments and request
@@ -120,7 +125,7 @@ def output_file(response, args):
 			print("ERROR OPENING FILE")
 		finally: 
 			file.close()
-
+# returns true or false depending if url has code 302 (redirect)
 def isRedirect(args):
 	if args.url:
 		url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0] + "?" +args.url.query
@@ -131,7 +136,7 @@ def isRedirect(args):
 			return False
 	else: 
 		return False
-
+# Method to get parsed redirect url
 def getRedirectUrl(args):
 	url = args.url.scheme + "://" + args.url.netloc + args.url.path.split(" ")[0] + "?" +args.url.query
 	request = urllib.request.urlopen(url)

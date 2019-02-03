@@ -1,9 +1,9 @@
 HTTP/1.1 200 OK
 Connection: keep-alive
 Server: gunicorn/19.9.0
-Date: Fri, 01 Feb 2019 22:42:00 GMT
+Date: Sun, 03 Feb 2019 01:30:12 GMT
 Content-Type: application/json
-Content-Length: 286
+Content-Length: 284
 Access-Control-Allow-Origin: *
 Access-Control-Allow-Credentials: true
 Via: 1.1 vegur
@@ -18,6 +18,6 @@ Via: 1.1 vegur
     "Host": "httpbin.org", 
     "User-Agent": "Concordia-HTTP/1.0"
   }, 
-  "origin": "132.205.229.117", 
+  "origin": "45.58.109.154", 
   "url": "http://httpbin.org/get?course=networking&assignment=1"
 }
