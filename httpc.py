@@ -2,10 +2,15 @@
 # Michel Maroun 27197241
 
 #Lines to test
+# GET REQUEST
 # py httpc.py get'http://httpbin.org/get?course=networking&assignment=1'
+# GET REQUEST WITH VERBOSE OPTION 
 # py httpc.py get -v 'http://httpbin.org/get?course=networking&assignment=1'
+#	POST REQUEST WITH DATA
 # py httpc.py post -h Content-Type:application/json -d {\"Assignment\":1} "http://httpbin.org/post"
+# POST REQUEST READ FROM FILE
 # py httpc.py post -h Content-Type:application/json -f "argspost.txt" "http://httpbin.org/post"
+#	GET REQUEST WITH OUTPUT TO FILE  
 # py httpc.py get "http://httpbin.org/get?course=networking&assignment=1" -o textfile.txt
 
 import argparse
@@ -146,7 +151,7 @@ def getRedirectUrl(args):
 parser = argparse.ArgumentParser(description='Http parser', add_help=False)
 	
 # Get/Post
-parser.add_argument('command', choices=['get','post'], help="Executes a HTTP GET/POST request and prints the response.")
+parser.add_argument('command', choices=['get','post', 'help'], help="Executes a HTTP GET/POST request and prints the response.")
 
 #add Data Command 
 parser.add_argument('-d', dest="data", action="store", metavar="inline-data", help="Associates an inline data to the body HTTP POST")
@@ -162,5 +167,5 @@ parser.add_argument('url', type=str, action="store", help="Url HTTP request is s
 parser.add_argument('-o', dest="output", action="store")
 
 args = parser.parse_args()
-
+print(args.command)
 http_request(args)	
