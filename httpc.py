@@ -167,5 +167,4 @@ parser.add_argument('url', type=str, action="store", help="Url HTTP request is s
 parser.add_argument('-o', dest="output", action="store")
 
 args = parser.parse_args()
-print(args.command)
 http_request(args)	
